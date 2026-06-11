@@ -1,8 +1,12 @@
+from functools import lru_cache
+
 from transformers import pipeline
 import re
 
-# Load pretrained toxic model
-classifier = pipeline("text-classification", model="unitary/toxic-bert")
+
+@lru_cache(maxsize=1)
+def get_classifier():
+    return pipeline("text-classification", model="unitary/toxic-bert")
 
 # Custom bad words (Indian context)
 bad_words = ["pagal", "chutiya", "boka", "faltu", "idiot", "stupid","nudes","nude","sex","sexy","ass","bitch","dick","pussy","slut","whore","dumb","fool","sucker","loser","jerk","bastard","douchebag","motherfucker","crap","damn"]
@@ -18,7 +22,8 @@ def has_bad_word(text):
 
 def predict(text):
     cleaned = clean_text(text)
-    
+
+    classifier = get_classifier()
     result = classifier(cleaned)[0]
     label = result['label']
     score = result['score']
